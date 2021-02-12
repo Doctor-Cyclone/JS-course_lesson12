@@ -5,10 +5,19 @@ const todoControl = document.querySelector('.todo-control'),
 	todoList = document.querySelector('.todo-list'),
 	todoCompleted = document.querySelector('.todo-completed');
 
-const todoData = [];
+let todoData = [];
+
+const setLocalStorage = function(){
+	localStorage.setItem('todo', JSON.stringify(todoData));
+},
+getLocalStorage = function(){
+	if(localStorage.getItem('todo')){
+		return todoData = JSON.parse(localStorage.getItem('todo'));
+	}
+};
 
 const render = function(){
-	let todoFromLS = JSON.parse(localStorage.getItem('todo'));
+	getLocalStorage();
 
 	todoList.textContent = '';
 	todoCompleted.textContent = '';
@@ -26,41 +35,50 @@ const render = function(){
 					'<button class="todo-remove"></button>' +
 					'<button class="todo-complete"></button>' +
 				'</div>';
-
-			if(item.completed){
-				todoCompleted.append(li);
-			} else {
-				todoList.append(li);
-			}
-
+		//Добавление элемента в ВЫПОЛНЕННЫЕ или неВЫПОЛНЕННЫЕ
+				if(item.completed){
+					todoCompleted.append(li);
+				} else {
+					todoList.append(li);
+				}
+		//КНОПКИ УДАЛИТЬ и ВЫПОЛНЕНО
 			const btnTodoComplete = li.querySelector('.todo-complete'),
 				btnTodoRemove = li.querySelector('.todo-remove');
 			//Удаление блока
 			btnTodoRemove.addEventListener('click', function(){
 				li.remove();
-				localStorage.setItem('todo', JSON.stringify(todoData));
+				todoData.splice(todoData.indexOf(item), 1);
+				setLocalStorage();
 			});
 			//Отметка выполнено
 			btnTodoComplete.addEventListener('click', function(){
 				item.completed = !item.completed;
+				setLocalStorage();
 				render();
 			});
 		}
-		localStorage.setItem('todo', JSON.stringify(todoData));
+		
 	});
+
 	headerInput.value = '';
 };
 
 todoControl.addEventListener('submit', function(event){
 	event.preventDefault();
 
-	const newTodo = {
-		value: headerInput.value,
-		completed: false
-	};
-
-	todoData.push(newTodo);
-	render();
+	if(headerInput.value.trim() === ''){
+		headerInput.value = '';
+	} else {
+		const newTodo = {
+			value: headerInput.value,
+			completed: false
+		};
+	
+		todoData.push(newTodo);
+		setLocalStorage();
+		render();
+	}
+	
 });
 
 render();
